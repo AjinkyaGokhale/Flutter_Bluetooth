@@ -1,10 +1,6 @@
-// Copyright 2017, Paul DeMarco.
-// All rights reserved. Use of this source code is governed by a
-// BSD-style license that can be found in the LICENSE file.
-
 import 'dart:async';
 import 'dart:math';
-
+import 'package:bluetooth_app/fan.dart'; // Adjust the path according to your project structure
 import 'package:flutter/material.dart';
 import 'package:flutter_blue/flutter_blue.dart';
 import 'package:bluetooth_app/widgets.dart';
@@ -192,6 +188,7 @@ class DeviceScreen extends StatelessWidget {
                             descriptor: d,
                             onReadPressed: () => d.read(),
                             onWritePressed: () => d.write(_getRandomBytes()),
+                            device: device, // Pass the device here
                           ),
                         )
                         .toList(),
@@ -213,33 +210,54 @@ class DeviceScreen extends StatelessWidget {
             stream: device.state,
             initialData: BluetoothDeviceState.connecting,
             builder: (c, snapshot) {
+              IconData iconData;
+              String tooltip;
               VoidCallback? onPressed;
-              String text;
+
               switch (snapshot.data) {
                 case BluetoothDeviceState.connected:
-                  onPressed = () => device.disconnect();
-                  text = 'DISCONNECT';
+                  iconData = Icons.bluetooth_connected;
+                  tooltip = 'Disconnect from device';
+                  onPressed = () {
+                    device.disconnect();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Disconnected from device'))
+                    );
+                  };
                   break;
                 case BluetoothDeviceState.disconnected:
-                  onPressed = () => device.connect();
-                  text = 'CONNECT';
+                  iconData = Icons.bluetooth_disabled;
+                  tooltip = 'Connect to device';
+                  onPressed = () {
+                    device.connect();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Connecting to device'))
+                    );
+                  };
                   break;
                 default:
+                  iconData = Icons.bluetooth_searching;
+                  tooltip = 'Connection status unknown';
                   onPressed = null;
-                  text = snapshot.data.toString().substring(21).toUpperCase();
                   break;
               }
-              return TextButton(
-                  onPressed: onPressed,
-                  child: Text(
-                    text,
-                    style: Theme.of(context)
-                        .primaryTextTheme
-                        .labelLarge
-                        ?.copyWith(color: Colors.white),
-                  ));
+
+              return IconButton(
+                icon: Icon(iconData),
+                onPressed: onPressed,
+                tooltip: tooltip,
+              );
             },
-          )
+          ),
+          IconButton(
+            icon: Icon(Icons.mode_fan_off_sharp),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => FanControlScreen(device: device),
+              ),
+            ),
+            tooltip: 'Control Fan',
+          ),
         ],
       ),
       body: SingleChildScrollView(

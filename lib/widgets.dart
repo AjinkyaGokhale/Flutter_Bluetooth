@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue/flutter_blue.dart';
+import 'fan.dart'; 
 
 class ScanResultTile extends StatelessWidget {
   const ScanResultTile({Key? key, required this.result, this.onTap})
@@ -25,7 +26,7 @@ class ScanResultTile extends StatelessWidget {
           ),
           Text(
             result.device.id.toString(),
-            style: Theme.of(context).textTheme.caption,
+            style: Theme.of(context).textTheme.bodySmall,
           )
         ],
       );
@@ -40,7 +41,7 @@ class ScanResultTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(title, style: Theme.of(context).textTheme.caption),
+          Text(title, style: Theme.of(context).textTheme.bodySmall),
           SizedBox(
             width: 12.0,
           ),
@@ -97,7 +98,7 @@ class ScanResultTile extends StatelessWidget {
       leading: Text(result.rssi.toString()),
       trailing: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.black, // Background color
+          backgroundColor: Colors.purple.shade100, // Background color
           textStyle: const TextStyle(color: Colors.white), // Text color
         ),
         onPressed: (result.advertisementData.connectable) ? onTap : null,
@@ -208,7 +209,7 @@ class CharacteristicTile extends StatelessWidget {
     int tempRaw = value[0] | (value[1] << 8);
     if (tempRaw >= 32768) tempRaw -= 65536; // Convert from unsigned to signed
 
-    // Assuming the temperature is scaled to tenths of degrees (e.g., 215 represents 21.5 °C)
+    // Assuming the temperature is scaled to hundreds of degrees (e.g., 215 represents 21.5 °C)
     double temperature = tempRaw / 100.0;
 
     // Format to two decimal places
@@ -266,51 +267,42 @@ class DescriptorTile extends StatelessWidget {
   final BluetoothDescriptor descriptor;
   final VoidCallback? onReadPressed;
   final VoidCallback? onWritePressed;
+  final BluetoothDevice device;
 
   const DescriptorTile(
       {Key? key,
       required this.descriptor,
       this.onReadPressed,
-      this.onWritePressed})
+      this.onWritePressed,
+      required this.device})
       : super(key: key);
 
-  @override
+ @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return Card( // Wrap with a Card for better UI presentation
+      child: Column(
         children: <Widget>[
-          Text('Descriptor'),
-          Text('0x${descriptor.uuid.toString().toUpperCase().substring(4, 8)}',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyLarge
-                  ?.copyWith(color: Theme.of(context).textTheme.bodySmall?.color))
-        ],
-      ),
-      subtitle: StreamBuilder<List<int>>(
-        stream: descriptor.value,
-        initialData: descriptor.lastValue,
-        builder: (c, snapshot) => Text(snapshot.data.toString()),
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          IconButton(
-            icon: Icon(
-              Icons.file_download,
-              color: Theme.of(context).iconTheme.color?.withOpacity(0.5),
+          ListTile(
+            title: const Text('Descriptor'),
+            subtitle: Text('0x${descriptor.uuid.toString().toUpperCase().substring(4, 8)}',
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: Theme.of(context).textTheme.bodySmall?.color,
+              ),
             ),
-            onPressed: onReadPressed,
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                IconButton(
+                  icon: Icon(Icons.file_download, color: Theme.of(context).iconTheme.color?.withOpacity(0.5)),
+                  onPressed: onReadPressed,
+                ),
+                IconButton(
+                  icon: Icon(Icons.file_upload, color: Theme.of(context).iconTheme.color?.withOpacity(0.5)),
+                  onPressed: onWritePressed,
+                ),
+              ],
+            ),
           ),
-          IconButton(
-            icon: Icon(
-              Icons.file_upload,
-              color: Theme.of(context).iconTheme.color?.withOpacity(0.5),
-            ),
-            onPressed: onWritePressed,
-          )
         ],
       ),
     );
@@ -325,7 +317,7 @@ class AdapterStateTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.redAccent,
+      color: Colors.purpleAccent,
       child: ListTile(
         title: Text(
           'Bluetooth adapter is ${state.toString().substring(15)}',
