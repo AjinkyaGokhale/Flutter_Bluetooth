@@ -6,6 +6,12 @@
 
 This project aims to provide a user-friendly interface for managing Bluetooth connections, including capabilities for device discovery, connection management, and displaying device-specific data such as temperature and humidity readings from connected sensors.
 
+## Screenshot
+
+Here's a look at our app in action:
+
+<img src="Snaps/1.jpeg" alt="Alt text" width="200"/> <img src="Snaps/2.jpeg" alt="Alt text" width="200"/> <img src="Snaps/3.jpeg" alt="Alt text" width="200"/>
+
 ## Features
 
 - **Device Scanning**: Scan for nearby Bluetooth devices.
