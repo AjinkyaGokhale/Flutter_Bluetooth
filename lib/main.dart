@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'dart:math';
-import 'package:bluetooth_app/fan.dart'; // Adjust the path according to your project structure
+import 'package:bluetooth_app/fan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue/flutter_blue.dart';
 import 'package:bluetooth_app/widgets.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,21 +13,54 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  Future<void> requestPermissions() async {
+    await [
+      Permission.bluetooth,
+      Permission.bluetoothConnect,
+      Permission.bluetoothScan, // Required from Android 12 (API level 31)
+      Permission.location,
+    ].request();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      color: Colors.lightBlue,
-      home: StreamBuilder<BluetoothState>(
-          stream: FlutterBlue.instance.state,
-          initialData: BluetoothState.unknown,
-          builder: (c, snapshot) {
-            final state = snapshot.data;
-            if (state == BluetoothState.on) {
-              return FindDevicesScreen();
-            }
-            return BluetoothOffScreen(state: state);
-          }),
+    return FutureBuilder(
+      future: requestPermissions(),
+      builder: (context, snapshot) {
+        // Check permission
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const MaterialApp(
+            home: Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+          );
+        } else if (snapshot.error != null) {
+          return const MaterialApp(
+            home: Scaffold(
+              body: Center(
+                child: Text('Failed to get permissions'),
+              ),
+            ),
+          );
+        }
+        // Once permissions are granted, show the state
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          color: Colors.lightBlue,
+          home: StreamBuilder<BluetoothState>(
+              stream: FlutterBlue.instance.state,
+              initialData: BluetoothState.unknown,
+              builder: (c, snapshot) {
+                final state = snapshot.data;
+                if (state == BluetoothState.on) {
+                  return FindDevicesScreen();
+                }
+                return BluetoothOffScreen(state: state);
+              }),
+        );
+      },
     );
   }
 }
@@ -53,7 +87,7 @@ class BluetoothOffScreen extends StatelessWidget {
               'Bluetooth Adapter is ${state != null ? state.toString().substring(15) : 'not available'}.',
               style: Theme.of(context)
                   .primaryTextTheme
-                  .titleMedium // .headline
+                  .titleMedium
                   ?.copyWith(color: Colors.white),
             ),
           ],

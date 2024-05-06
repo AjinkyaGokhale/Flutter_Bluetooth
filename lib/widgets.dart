@@ -1,8 +1,6 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_blue/flutter_blue.dart';
-import 'fan.dart';
+
 
 class ScanResultTile extends StatelessWidget {
   const ScanResultTile({Key? key, required this.result, this.onTap})
@@ -56,7 +54,7 @@ class ScanResultTile extends StatelessWidget {
       ),
     );
   }
-
+//############## HELPER FUNCTIONS ##################
   String getNiceHexArray(List<int> bytes) {
     return '[${bytes.map((i) => i.toRadixString(16).padLeft(2, '0')).join(', ')}]'
         .toUpperCase();
@@ -168,7 +166,7 @@ class CharacteristicTile extends StatelessWidget {
       this.onNotificationPressed})
       : super(key: key);
 
-  // Define the parseValue method here to ensure it's accessible
+//############## PARSE VALUE ##################
   String parseValue(String uuid, List<int> value) {
     switch (uuid.toUpperCase().substring(4, 8)) {
       case "2A6E": // Assuming you're using standard UUID for temperature
@@ -182,7 +180,6 @@ class CharacteristicTile extends StatelessWidget {
     }
   }
 
-  // Define the characteristic label method here
   String getCharacteristicLabel(String uuid) {
     switch (uuid.toUpperCase().substring(4, 8)) {
       case "2A1C":
@@ -194,28 +191,23 @@ class CharacteristicTile extends StatelessWidget {
     }
   }
 
+//############## PARSE FUNCTIONS ##################
  String parseTemperature(List<int> value) {
   if (value.isEmpty) {
     return "N/A"; 
   }
   int flags = value[0];
   bool isCelsius = (flags & 0x01) == 0; // Assuming the LSB of flags indicates the unit
-
-  // Convert four bytes to a 32-bit floating point number (little-endian)
   int bits = value[1] | (value[2] << 8);
-
   // Adjust Decimal
   double temperature = bits/100.0;
   String unit = isCelsius ? "°C" : "°F";
   return "${temperature.toStringAsFixed(2)} $unit";
 }
-
-
-  String parseHumidity(List<int> value) {
+String parseHumidity(List<int> value) {
     if (value.isEmpty) {
       return "N/A";
     } 
-    // Convert four bytes to a 32-bit unsigned integer (little-endian)
     int humidRaw =
         value[0] | (value[1] << 8);
     double humid = humidRaw/100.0;
@@ -243,13 +235,13 @@ class CharacteristicTile extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                  icon: Icon(Icons.file_download), onPressed: onReadPressed),
+                  icon: const Icon(Icons.file_download), onPressed: onReadPressed),
               IconButton(
-                  icon: Icon(Icons.file_upload), onPressed: onWritePressed),
+                  icon: const Icon(Icons.file_upload), onPressed: onWritePressed),
               IconButton(
                   icon: Icon(characteristic.isNotifying
-                      ? Icons.sync_disabled
-                      : Icons.sync),
+                      ? Icons.sync
+                      : Icons.sync_disabled),
                   onPressed: onNotificationPressed)
             ],
           ),
@@ -259,7 +251,7 @@ class CharacteristicTile extends StatelessWidget {
     );
   }
 }
-
+//############## DESCRIPTOR ##################
 class DescriptorTile extends StatelessWidget {
   final BluetoothDescriptor descriptor;
   final VoidCallback? onReadPressed;
