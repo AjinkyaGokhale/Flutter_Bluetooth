@@ -12,6 +12,11 @@ Here's a look at our app in action:
 
 <img src="Snaps/1.jpeg" alt="Alt text" width="200"/> <img src="Snaps/2.jpeg" alt="Alt text" width="200"/> <img src="Snaps/3.jpeg" alt="Alt text" width="200"/>
 
+[Update] Task 2 - Control Fan/LED 
+
+<img src="Snaps/4.jpeg" alt="Alt text" width="200"/> <img src="Snaps/5.jpeg" alt="Alt text" width="200"/> <img src="Snaps/6.jpeg" alt="Alt text" width="200"/>
+
+
 ## Features
 
 - **Device Scanning**: Scan for nearby Bluetooth devices.
