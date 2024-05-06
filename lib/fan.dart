@@ -10,6 +10,7 @@ class FanControlScreen extends StatefulWidget {
   @override
   _FanControlScreenState createState() => _FanControlScreenState();
 }
+
 class AnimatedFanIcon extends StatelessWidget {
   final double intensity;
 
@@ -17,19 +18,21 @@ class AnimatedFanIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center( // Ensures that the icon is centered in its container
+    return Center(
+      // Ensures that the icon is centered in its container
       child: AnimatedRotation(
         turns: intensity, // Use intensity to control the speed of the rotation
-        duration: const Duration(milliseconds: 300), // Adjust duration to smooth out the animation
+        duration: const Duration(
+            milliseconds: 300), // Adjust duration to smooth out the animation
         child: Icon(
-          Icons.ac_unit, // Placeholder for a fan icon, replace with a suitable fan icon if available
+          Icons
+              .ac_unit, // Placeholder for a fan icon, replace with a suitable fan icon if available
           size: 100, // Increased size for better visibility
         ),
       ),
     );
   }
 }
-
 
 class _FanControlScreenState extends State<FanControlScreen> {
   BluetoothCharacteristic? intensityCharacteristic;
@@ -44,9 +47,10 @@ class _FanControlScreenState extends State<FanControlScreen> {
   void discoverServices() async {
     List<BluetoothService> services = await widget.device.discoverServices();
     for (var service in services) {
-      if (service.uuid.toString().toUpperCase().substring(4,8) == "0001") {
+      if (service.uuid.toString().toUpperCase().substring(4, 8) == "0001") {
         for (var characteristic in service.characteristics) {
-          if (characteristic.uuid.toString().toUpperCase() == "10000001-0000-0000-FDFD-FDFDFDFDFDFD") {
+          if (characteristic.uuid.toString().toUpperCase() ==
+              "10000001-0000-0000-FDFD-FDFDFDFDFDFD") {
             intensityCharacteristic = characteristic;
           }
         }
@@ -65,7 +69,7 @@ class _FanControlScreenState extends State<FanControlScreen> {
       return;
     }
 
-    int intValue = (value * 65535).toInt();  // Scale slider value to uint16
+    int intValue = (value * 65535).toInt(); // Scale slider value to uint16
     List<int> bytes = [intValue & 0xFF, (intValue >> 8) & 0xFF];
 
     intensityCharacteristic!.write(bytes).then((_) {
@@ -83,7 +87,8 @@ class _FanControlScreenState extends State<FanControlScreen> {
         actions: <Widget>[
           StreamBuilder<BluetoothDeviceState>(
             stream: widget.device.state,
-            initialData: BluetoothDeviceState.connecting, // Adjust this as needed
+            initialData:
+                BluetoothDeviceState.connecting, // Adjust this as needed
             builder: (context, snapshot) {
               IconData icon;
               VoidCallback? onPressed;
@@ -96,8 +101,7 @@ class _FanControlScreenState extends State<FanControlScreen> {
                   onPressed = () {
                     widget.device.disconnect();
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Disconnected from device'))
-                    );
+                        SnackBar(content: Text('Disconnected from device')));
                   };
                   break;
                 case BluetoothDeviceState.disconnected:
@@ -106,8 +110,7 @@ class _FanControlScreenState extends State<FanControlScreen> {
                   onPressed = () {
                     widget.device.connect();
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Connecting to device'))
-                    );
+                        SnackBar(content: Text('Connecting to device')));
                   };
                   break;
                 default:
@@ -126,35 +129,40 @@ class _FanControlScreenState extends State<FanControlScreen> {
           ),
         ],
       ),
-    body: SingleChildScrollView(
-  child: Column(
-    mainAxisAlignment: MainAxisAlignment.center, // Ensures vertical centering
-    crossAxisAlignment: CrossAxisAlignment.center, // Ensures horizontal centering
-    children: <Widget>[
-      Text('Adjust Fan Intensity', style: Theme.of(context).textTheme.titleMedium),
-      SizedBox(height: 20), // Add some spacing
-      AnimatedFanIcon(intensity: currentIntensity), // The fan icon
-      Slider(
-        value: currentIntensity,
-        min: 0,
-        max: 1,
-        divisions: 100,
-        onChanged: (value) {
-          setState(() {
-            currentIntensity = value;
-          });
-        },
-        onChangeEnd: (value) {
-          setIntensity(value);
-        },
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment:
+              MainAxisAlignment.center, // Ensures vertical centering
+          crossAxisAlignment:
+              CrossAxisAlignment.center, // Ensures horizontal centering
+          children: <Widget>[
+            Text('Adjust Fan Intensity',
+                style: Theme.of(context).textTheme.titleMedium),
+            SizedBox(height: 20), // Add some spacing
+            AnimatedFanIcon(intensity: currentIntensity), // The fan icon
+            Slider(
+              value: currentIntensity,
+              min: 0,
+              max: 1,
+              divisions: 100,
+              onChanged: (value) {
+                setState(() {
+                  currentIntensity = value;
+                });
+              },
+              onChangeEnd: (value) {
+                setIntensity(value);
+              },
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                  'Current Intensity: ${(currentIntensity * 100).toStringAsFixed(2)}%',
+                  style: Theme.of(context).textTheme.subtitle1),
+            ),
+          ],
+        ),
       ),
-      Padding(
-        padding: const EdgeInsets.all(16),
-        child: Text('Current Intensity: ${(currentIntensity * 100).toStringAsFixed(2)}%', style: Theme.of(context).textTheme.subtitle1),
-      ),
-    ],
-  ),
-),
     );
   }
 }

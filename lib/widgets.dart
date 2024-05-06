@@ -1,10 +1,8 @@
-// Copyright 2017, Paul DeMarco.
-// All rights reserved. Use of this source code is governed by a
-// BSD-style license that can be found in the LICENSE file.
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue/flutter_blue.dart';
-import 'fan.dart'; 
+import 'fan.dart';
 
 class ScanResultTile extends StatelessWidget {
   const ScanResultTile({Key? key, required this.result, this.onTap})
@@ -12,7 +10,6 @@ class ScanResultTile extends StatelessWidget {
 
   final ScanResult result;
   final VoidCallback? onTap;
-
 
   Widget _buildTitle(BuildContext context) {
     if (result.device.name.length > 0) {
@@ -42,7 +39,7 @@ class ScanResultTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(title, style: Theme.of(context).textTheme.bodySmall),
-          SizedBox(
+          const SizedBox(
             width: 12.0,
           ),
           Expanded(
@@ -75,8 +72,7 @@ class ScanResultTile extends StatelessWidget {
           '${id.toRadixString(16).toUpperCase()}: ${getNiceHexArray(bytes)}');
     });
     return res.join(', ');
-    }
-  
+  }
 
   String getNiceServiceData(Map<String, List<int>> data) {
     if (data.isEmpty) {
@@ -88,11 +84,9 @@ class ScanResultTile extends StatelessWidget {
     });
     return res.join(', ');
   }
- 
 
-  
   @override
- Widget build(BuildContext context) {
+  Widget build(BuildContext context) {
     return ExpansionTile(
       title: _buildTitle(context),
       leading: Text(result.rssi.toString()),
@@ -102,7 +96,7 @@ class ScanResultTile extends StatelessWidget {
           textStyle: const TextStyle(color: Colors.white), // Text color
         ),
         onPressed: (result.advertisementData.connectable) ? onTap : null,
-        child: Text('CONNECT'),
+        child: const Text('CONNECT'),
       ),
       children: <Widget>[
         _buildAdvRow(
@@ -122,7 +116,6 @@ class ScanResultTile extends StatelessWidget {
       ],
     );
   }
-
 }
 
 class ServiceTile extends StatelessWidget {
@@ -141,7 +134,7 @@ class ServiceTile extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text('Service'),
+            const Text('Service'),
             Text('0x${service.uuid.toString().toUpperCase().substring(4, 8)}',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: Theme.of(context).textTheme.bodySmall?.color))
@@ -151,7 +144,7 @@ class ServiceTile extends StatelessWidget {
       );
     } else {
       return ListTile(
-        title: Text('Service'),
+        title: const Text('Service'),
         subtitle:
             Text('0x${service.uuid.toString().toUpperCase().substring(4, 8)}'),
       );
@@ -175,8 +168,7 @@ class CharacteristicTile extends StatelessWidget {
       this.onNotificationPressed})
       : super(key: key);
 
-
-      // Define the parseValue method here to ensure it's accessible
+  // Define the parseValue method here to ensure it's accessible
   String parseValue(String uuid, List<int> value) {
     switch (uuid.toUpperCase().substring(4, 8)) {
       case "2A6E": // Assuming you're using standard UUID for temperature
@@ -185,13 +177,14 @@ class CharacteristicTile extends StatelessWidget {
       case "2A6F": // Assuming standard UUID for humidity
         return parseHumidity(value);
       default:
-        return getNiceHexArray(value); // Fallback to hex display for unknown characteristics
+        return getNiceHexArray(
+            value); // Fallback to hex display for unknown characteristics
     }
   }
+
   // Define the characteristic label method here
   String getCharacteristicLabel(String uuid) {
     switch (uuid.toUpperCase().substring(4, 8)) {
-      case "2A6E":
       case "2A1C":
         return "Temperature";
       case "2A6F":
@@ -201,65 +194,69 @@ class CharacteristicTile extends StatelessWidget {
     }
   }
 
-  // Assuming these methods are globally accessible or defined elsewhere correctly
  String parseTemperature(List<int> value) {
-    if (value.length < 2) return "N/A"; // Ensure there are at least 2 bytes for a 16-bit integer
+  if (value.isEmpty) {
+    return "N/A"; 
+  }
+  int flags = value[0];
+  bool isCelsius = (flags & 0x01) == 0; // Assuming the LSB of flags indicates the unit
 
-    // Convert two bytes to a 16-bit signed integer (little-endian)
-    int tempRaw = value[0] | (value[1] << 8);
-    if (tempRaw >= 32768) tempRaw -= 65536; // Convert from unsigned to signed
+  // Convert four bytes to a 32-bit floating point number (little-endian)
+  int bits = value[1] | (value[2] << 8);
 
-    // Assuming the temperature is scaled to hundreds of degrees (e.g., 215 represents 21.5 °C)
-    double temperature = tempRaw / 100.0;
-
-    // Format to two decimal places
-    return "${temperature.toStringAsFixed(2)} °C";
+  // Adjust Decimal
+  double temperature = bits/100.0;
+  String unit = isCelsius ? "°C" : "°F";
+  return "${temperature.toStringAsFixed(2)} $unit";
 }
 
-String parseHumidity(List<int> value) {
-    if (value.length < 4) return "N/A"; // Ensure there are at least 4 bytes for a 32-bit integer
 
+  String parseHumidity(List<int> value) {
+    if (value.isEmpty) {
+      return "N/A";
+    } 
     // Convert four bytes to a 32-bit unsigned integer (little-endian)
-    int humidRaw = value[0] | (value[1] << 8) | (value[2] << 16) | (value[3] << 24);
-
-    // Assuming the humidity is scaled to hundredths (e.g., 5050 represents 50.50%)
-    double humid = humidRaw / 100.0;
-
-    // Format to two decimal places
+    int humidRaw =
+        value[0] | (value[1] << 8);
+    double humid = humidRaw/100.0;
     return "${humid.toStringAsFixed(2)}%";
-}
+  }
 
   String getNiceHexArray(List<int> bytes) {
-    return '[${bytes.map((i) => i.toRadixString(16).padLeft(2, '0')).join(', ')}]'.toUpperCase();
+    return '[${bytes.map((i) => i.toRadixString(16).padLeft(2, '0')).join(', ')}]'
+        .toUpperCase();
   }
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<int>>(
-  stream: characteristic.value,
-  initialData: characteristic.lastValue,
-  builder: (c, snapshot) {
-    final value = snapshot.data ?? [];
-    return ExpansionTile(
-      title: ListTile(
-        title: Text(getCharacteristicLabel(characteristic.uuid.toString())),
-        subtitle: Text(parseValue(characteristic.uuid.toString(), value)),
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(icon: Icon(Icons.file_download), onPressed: onReadPressed),
-          IconButton(icon: Icon(Icons.file_upload), onPressed: onWritePressed),
-          IconButton(
-            icon: Icon(characteristic.isNotifying ? Icons.sync_disabled : Icons.sync),
-            onPressed: onNotificationPressed
-          )
-        ],
-      ),
-      children: descriptorTiles,
+      stream: characteristic.value,
+      initialData: characteristic.lastValue,
+      builder: (c, snapshot) {
+        final value = snapshot.data ?? [];
+        return ExpansionTile(
+          title: ListTile(
+            title: Text(getCharacteristicLabel(characteristic.uuid.toString())),
+            subtitle: Text(parseValue(characteristic.uuid.toString(), value)),
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                  icon: Icon(Icons.file_download), onPressed: onReadPressed),
+              IconButton(
+                  icon: Icon(Icons.file_upload), onPressed: onWritePressed),
+              IconButton(
+                  icon: Icon(characteristic.isNotifying
+                      ? Icons.sync_disabled
+                      : Icons.sync),
+                  onPressed: onNotificationPressed)
+            ],
+          ),
+          children: descriptorTiles,
+        );
+      },
     );
-  },
-);
   }
 }
 
@@ -277,27 +274,33 @@ class DescriptorTile extends StatelessWidget {
       required this.device})
       : super(key: key);
 
- @override
+  @override
   Widget build(BuildContext context) {
-    return Card( // Wrap with a Card for better UI presentation
+    return Card(
+      // Wrap with a Card for better UI presentation
       child: Column(
         children: <Widget>[
           ListTile(
             title: const Text('Descriptor'),
-            subtitle: Text('0x${descriptor.uuid.toString().toUpperCase().substring(4, 8)}',
+            subtitle: Text(
+              '0x${descriptor.uuid.toString().toUpperCase().substring(4, 8)}',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Theme.of(context).textTheme.bodySmall?.color,
-              ),
+                    color: Theme.of(context).textTheme.bodySmall?.color,
+                  ),
             ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 IconButton(
-                  icon: Icon(Icons.file_download, color: Theme.of(context).iconTheme.color?.withOpacity(0.5)),
+                  icon: Icon(Icons.file_download,
+                      color:
+                          Theme.of(context).iconTheme.color?.withOpacity(0.5)),
                   onPressed: onReadPressed,
                 ),
                 IconButton(
-                  icon: Icon(Icons.file_upload, color: Theme.of(context).iconTheme.color?.withOpacity(0.5)),
+                  icon: Icon(Icons.file_upload,
+                      color:
+                          Theme.of(context).iconTheme.color?.withOpacity(0.5)),
                   onPressed: onWritePressed,
                 ),
               ],

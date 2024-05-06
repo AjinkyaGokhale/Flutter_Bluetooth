@@ -15,6 +15,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       color: Colors.lightBlue,
       home: StreamBuilder<BluetoothState>(
           stream: FlutterBlue.instance.state,
@@ -43,7 +44,7 @@ class BluetoothOffScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-           const Icon(
+            const Icon(
               Icons.bluetooth_disabled,
               size: 200.0,
               color: Colors.white54,
@@ -52,7 +53,7 @@ class BluetoothOffScreen extends StatelessWidget {
               'Bluetooth Adapter is ${state != null ? state.toString().substring(15) : 'not available'}.',
               style: Theme.of(context)
                   .primaryTextTheme
-                  .titleMedium  // .headline
+                  .titleMedium // .headline
                   ?.copyWith(color: Colors.white),
             ),
           ],
@@ -141,7 +142,7 @@ class FindDevicesScreen extends StatelessWidget {
             return FloatingActionButton(
                 child: Icon(Icons.search),
                 onPressed: () => FlutterBlue.instance
-                    .startScan(timeout: Duration(seconds: 4)));
+                    .startScan(timeout: const Duration(seconds: 4)));
           }
         },
       ),
@@ -220,9 +221,8 @@ class DeviceScreen extends StatelessWidget {
                   tooltip = 'Disconnect from device';
                   onPressed = () {
                     device.disconnect();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Disconnected from device'))
-                    );
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text('Disconnected from device')));
                   };
                   break;
                 case BluetoothDeviceState.disconnected:
@@ -231,8 +231,7 @@ class DeviceScreen extends StatelessWidget {
                   onPressed = () {
                     device.connect();
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Connecting to device'))
-                    );
+                        const SnackBar(content: Text('Connecting to device')));
                   };
                   break;
                 default:
@@ -250,7 +249,7 @@ class DeviceScreen extends StatelessWidget {
             },
           ),
           IconButton(
-            icon: Icon(Icons.mode_fan_off_sharp),
+            icon: const Icon(Icons.mode_fan_off_sharp),
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) => FanControlScreen(device: device),
@@ -283,7 +282,7 @@ class DeviceScreen extends StatelessWidget {
                         icon: Icon(Icons.refresh),
                         onPressed: () => device.discoverServices(),
                       ),
-                      IconButton(
+                      const IconButton(
                         icon: SizedBox(
                           child: CircularProgressIndicator(
                             valueColor: AlwaysStoppedAnimation(Colors.grey),
