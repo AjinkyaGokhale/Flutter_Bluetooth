@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_blue/flutter_blue.dart';
 
-
 class ScanResultTile extends StatelessWidget {
   const ScanResultTile({Key? key, required this.result, this.onTap})
       : super(key: key);
@@ -54,6 +53,7 @@ class ScanResultTile extends StatelessWidget {
       ),
     );
   }
+
 //############## HELPER FUNCTIONS ##################
   String getNiceHexArray(List<int> bytes) {
     return '[${bytes.map((i) => i.toRadixString(16).padLeft(2, '0')).join(', ')}]'
@@ -192,25 +192,26 @@ class CharacteristicTile extends StatelessWidget {
   }
 
 //############## PARSE FUNCTIONS ##################
- String parseTemperature(List<int> value) {
-  if (value.isEmpty) {
-    return "N/A"; 
-  }
-  int flags = value[0];
-  bool isCelsius = (flags & 0x01) == 0; // Assuming the LSB of flags indicates the unit
-  int bits = value[1] | (value[2] << 8);
-  // Adjust Decimal
-  double temperature = bits/100.0;
-  String unit = isCelsius ? "°C" : "°F";
-  return "${temperature.toStringAsFixed(2)} $unit";
-}
-String parseHumidity(List<int> value) {
+  String parseTemperature(List<int> value) {
     if (value.isEmpty) {
       return "N/A";
-    } 
-    int humidRaw =
-        value[0] | (value[1] << 8);
-    double humid = humidRaw/100.0;
+    }
+    int flags = value[0];
+    bool isCelsius =
+        (flags & 0x01) == 0; // Assuming the LSB of flags indicates the unit
+    int bits = value[1] | (value[2] << 8);
+    // Adjust Decimal
+    double temperature = bits / 100.0;
+    String unit = isCelsius ? "°C" : "°F";
+    return "${temperature.toStringAsFixed(2)} $unit";
+  }
+
+  String parseHumidity(List<int> value) {
+    if (value.isEmpty) {
+      return "N/A";
+    }
+    int humidRaw = value[0] | (value[1] << 8);
+    double humid = humidRaw / 100.0;
     return "${humid.toStringAsFixed(2)}%";
   }
 
@@ -235,9 +236,11 @@ String parseHumidity(List<int> value) {
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                  icon: const Icon(Icons.file_download), onPressed: onReadPressed),
+                  icon: const Icon(Icons.file_download),
+                  onPressed: onReadPressed),
               IconButton(
-                  icon: const Icon(Icons.file_upload), onPressed: onWritePressed),
+                  icon: const Icon(Icons.file_upload),
+                  onPressed: onWritePressed),
               IconButton(
                   icon: Icon(characteristic.isNotifying
                       ? Icons.sync
@@ -251,6 +254,7 @@ String parseHumidity(List<int> value) {
     );
   }
 }
+
 //############## DESCRIPTOR ##################
 class DescriptorTile extends StatelessWidget {
   final BluetoothDescriptor descriptor;
