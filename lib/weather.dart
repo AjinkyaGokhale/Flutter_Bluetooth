@@ -3,10 +3,10 @@ import 'widgets.dart';
 
 class WeatherScreen extends StatelessWidget {
   final double temperature;
-  final double humidity;
+  final double humid;
 
   const WeatherScreen(
-      {Key? key, required this.temperature, required this.humidity})
+      {Key? key, required this.temperature, required this.humid})
       : super(key: key);
 
   @override
@@ -19,46 +19,36 @@ class WeatherScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildInfoBox(
-              title: 'Temperature:',
-              value: '$temperature °C',
-              color: Colors.blue, // Color theme for temperature
+            Text(
+              'Temperature:',
+              style: TextStyle(fontSize: 20),
+            ),
+            SizedBox(height: 10),
+            TextField(
+              readOnly: true,
+              controller: TextEditingController(
+                  text: CharacteristicTile.parseTemperature(
+                      [temperature.toInt()])),
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 18),
             ),
             SizedBox(height: 20),
-            _buildInfoBox(
-              title: 'Humidity:',
-              value: '$humidity %',
-              color: Colors.orange, // Color theme for humidity
+            Text(
+              'Humidity:',
+              style: TextStyle(fontSize: 20),
+            ),
+            SizedBox(height: 10),
+            TextField(
+              readOnly: true,
+              controller: TextEditingController(
+                  text: CharacteristicTile.parseHumidity([humid.toInt()])),
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 18),
             ),
           ],
         ),
       ),
     );
   }
-
-  Widget _buildInfoBox(
-      {required String title, required String value, required Color color}) {
-    return Container(
-      width: 250,
-      padding: EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        color: color, // Apply color theme
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            title,
-            style: TextStyle(fontSize: 20, color: Colors.white),
-          ),
-          SizedBox(height: 5),
-          Text(
-            value,
-            style: TextStyle(fontSize: 18, color: Colors.white),
-          ),
-        ],
-      ),
-    );
-  }
 }
+
