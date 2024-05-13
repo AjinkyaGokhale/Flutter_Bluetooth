@@ -192,7 +192,7 @@ class CharacteristicTile extends StatelessWidget {
   }
 
 //############## PARSE FUNCTIONS ##################
-  String parseTemperature(List<int> value) {
+  static String parseTemperature(List<int> value) {
     if (value.isEmpty) {
       return "N/A";
     }
@@ -206,7 +206,7 @@ class CharacteristicTile extends StatelessWidget {
     return "${temperature.toStringAsFixed(2)} $unit";
   }
 
-  String parseHumidity(List<int> value) {
+  static String parseHumidity(List<int> value) {
     if (value.isEmpty) {
       return "N/A";
     }
